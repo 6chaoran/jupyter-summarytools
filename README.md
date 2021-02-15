@@ -23,7 +23,7 @@ the quick-start notebook is available in [here](quick-start.ipynb)
 
 out-of-box `dfSummary` function will generate a HTML based data frame summary.
 
-```
+```py
 import pandas as pd
 from summarytools import dfSummary
 titanic = pd.read_csv('./data/titanic.csv')
@@ -33,7 +33,7 @@ dfSummary(titanic)
 
 ## collapsible summary
 
-```
+```py
 import pandas as pd
 from summarytools import dfSummary
 titanic = pd.read_csv('./data/titanic.csv')
@@ -44,7 +44,7 @@ dfSummary(titanic, is_collapsible = True)
 
 ## tabbed summary
 
-```
+```py
 import pandas as pd
 from summarytools import dfSummary, tabset
 titanic = pd.read_csv('./data/titanic.csv')
@@ -65,7 +65,7 @@ when export jupyter notebook to HTML, make sure `Export Embedded HTML
 
 ![](images/embedded_html.png)
 
-Using the following command to retain the data frame summary in exported HTML.
-```
+Using the following bash command to retain the data frame summary in exported HTML.
+```bash
 jupyter nbconvert --to html_embed path/of/your/notebook.ipynb
 ```
