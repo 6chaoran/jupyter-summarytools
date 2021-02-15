@@ -1,0 +1,4 @@
+pandas==1.1.1
+numpy==1.18.5
+matplotlib==3.3.0
+ipython==7.20.0

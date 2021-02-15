@@ -1,15 +1,21 @@
 # DataFrame Summary Tools in Jupyter Notebook
 
-This is python version of `summarytools`, which is used to generate standardized and comprehensive summary of dataframe.
+This is python version of `summarytools`, which is used to generate standardized and comprehensive summary of dataframe in Jupyter Notebooks.
 
 The idea is originated from the `summarytools` R package (https://github.com/dcomtois/summarytools).
 
-* Only `dfSummary` is made available for now
-* Added two html widgets (collapsible / tabbed page)
+* Only `dfSummary` function is made available for now
+* Added two html widgets to avoid displaying lengthy content
+    + [collapsible summary](#collapsible-summary) 
+    + [tabbed summary](#tabbed-summary)
 
 # Installation
 1. clone / download this repository
 2. copy the `summarytools` folder to your project root directory.
+
+## Dependencies
+1. python 3.6+
+2. packages in [requirements.txt](./requirements.txt)
 
 # Quick Start
 
@@ -56,8 +62,10 @@ tabset({
 
 when export jupyter notebook to HTML, make sure `Export Embedded HTML
 ` extension is installed and enabled.
+
 ![](images/embedded_html.png)
-Using the following command to retain the data frame summary as HTML.
+
+Using the following command to retain the data frame summary in exported HTML.
 ```
 jupyter nbconvert --to html_embed path/of/your/notebook.ipynb
 ```

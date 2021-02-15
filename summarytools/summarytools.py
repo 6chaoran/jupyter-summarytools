@@ -143,8 +143,23 @@ def dfSummary(data: pd.DataFrame, max_level: int = 10,
         is_collapsible (bool, optional): [flag for collapsible page]. Defaults to False.
 
     Returns:
-        [Pands.Styler]: if is_collapsible = False
+        [Pandas.Styler]: if is_collapsible = False
         [HTML]: if is_collapisbile = True
+
+    Examples:
+    ```
+    from summarytools import dfSummary
+    import pandas as pd
+    data = pd.read_csv('./your-data-path.csv')
+    # default summary view
+    dfSummary(data)
+    # collapsible summary
+    dfSummary(data, is_collapsible = True)
+    # tabbed summary
+    from summarytools import tabset
+    tab1 = dfSummary(data).render()
+    tabset({'tab1', tab1})
+    ```
     """
 
     tbl_name = _var_name(data)
