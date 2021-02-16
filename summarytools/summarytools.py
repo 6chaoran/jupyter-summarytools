@@ -7,8 +7,10 @@ from IPython.display import HTML, display
 import inspect
 from .htmlwidgets import collapsible, tabset
 
-def _is_categorical(x: pd.Series, num_unique, max_level):
+def _is_numerical(x:pd.Series):
+    return (x.dtype == int) or (x.dtype == float)
 
+def _is_categorical(x: pd.Series, num_unique, max_level):
     try:
         if x.dtype == 'category':
             return True
@@ -19,9 +21,10 @@ def _is_categorical(x: pd.Series, num_unique, max_level):
     if x.dtype in ['int', 'float']:
         if num_unique <= max_level:
             return True
-
     return False
 
+def _is_bool(x: pd.Series):
+    return x.dtype == bool
 
 def _graph_cat_col(stats, filename, figsize):
     fig = plt.figure(figsize=figsize)
@@ -97,7 +100,7 @@ def _stats_cat_col(x: pd.Series, max_level: int, show_graph: bool, filename: str
         'Freqs / (% of Valid)': '<br>'.join(freqs)}
 
     if show_graph:
-        graph = _graph_cat_col(stats, filename, figsize=(2, 0.25 * len(stats)))
+        graph = _graph_cat_col(stats, filename, figsize=(2, 0.3 * len(stats)))
         out['Graph'] = graph
 
     return out
@@ -129,6 +132,7 @@ def _var_name(var):
         if id(var) == id(lcls[name]):
             return name
     return ""
+    
 
 def dfSummary(data: pd.DataFrame, max_level: int = 10,
               show_graph: bool = True, tmp_dir: str = './tmp',
@@ -190,8 +194,12 @@ def dfSummary(data: pd.DataFrame, max_level: int = 10,
             stats += [_stats_cat_col(data[v], max_level, show_graph, filename)]
         elif _is_datetime(data[v]):
             stats += [_stats_date_col(data[v], show_graph, filename)]
-        else:
+        elif _is_bool(data[v]):
+            stats += [_stats_cat_col(data[v], max_level, show_graph, filename)]
+        elif _is_numerical(data[v]):
             stats += [_stats_num_col(data[v], show_graph, filename)]
+        else:
+            pass
     stats = pd.DataFrame(stats)
     out = pd.concat([out, stats], axis=1)
 
@@ -202,12 +210,21 @@ def dfSummary(data: pd.DataFrame, max_level: int = 10,
 
     # styles
     out = (out.style
-           .set_properties(**{'text-align': 'left'})
-           .set_table_styles([dict(selector='th', props=[('text-align', 'center')])])
-           .set_properties(subset=['No'], **{'width':'5%', 'max-width':'50px', 'min-width':'20px'})
-           .set_properties(subset=['Variable'], **{'width':'15%', 'max-width':'150px', 'min-width':'100px'})
-           .set_properties(subset=['Stats / Values'], **{'width':'25%', 'min-width':'150px'})
-           .set_properties(subset=['Freqs / (% of Valid)'], **{'width':'25%', 'min-width':'150px'})\
+           .set_properties(**{'text-align': 'left',
+                'font-size':'12px',
+                'vertical-align':'middle'})
+           .set_table_styles([dict(selector='tr', props=[('text-align', 'center')])])
+           .set_properties(subset=['No'], **{'width':'5%', 
+                'max-width':'50px', 
+                'min-width':'20px'})
+           .set_properties(subset=['Variable'], **{'width':'15%',
+                'max-width':'200px',
+                'min-width':'100px',
+                'word-break':'break-word'})
+           .set_properties(subset=['Stats / Values'], **{'width':'30%', 
+                'min-width':'100px'})
+           .set_properties(subset=['Freqs / (% of Valid)'], **{'width':'25%',
+                'min-width':'100px'})\
            .set_properties(subset=['Missing'], width='10%') \
            .set_table_styles([dict(props=[('table-layout', 'auto')])])\
            .hide_index()\
