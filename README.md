@@ -10,8 +10,21 @@ The idea is originated from the `summarytools` R package (https://github.com/dco
     + [tabbed summary](#tabbed-summary)
 
 # Installation
+
+## Install from repos
 1. clone / download this repository
 2. copy the `summarytools` folder to your project root directory.
+
+## PIP Install
+Special thanks to [@Buckeyes2019](https://github.com/Buckeyes2019), who wrapped this as a package and published on PyPI.
+```
+pip install summarytools
+
+# take note that, the importing need to be modified in the following examples, if pip install is used.
+# from summarytools import dfSummary -> from summarytools.summarytools import dfSummary
+# from summarytools import tabset -> from summarytools.summarytools import tabset
+
+```
 
 ## Dependencies
 1. python 3.6+
