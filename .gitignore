@@ -1,0 +1,5 @@
+dist
+tmp
+*.pyc
+*.ipynb_checkpoints
+jupyter_summarytools.egg-info

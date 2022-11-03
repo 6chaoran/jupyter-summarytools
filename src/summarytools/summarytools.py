@@ -92,8 +92,8 @@ def _stats_cat_col(x: pd.Series, max_level: int, show_graph: bool, filename: str
         freqs = stats[:max_level].map(
             lambda i: f"{i:,} ({i/total:.1%})").to_list()
         freqs += [f"{stats[max_level:].sum():,} ({stats[max_level:].sum()/total:.1%})"]
-        stats = stats.head(max_level).append(
-            pd.Series({'other': stats[max_level:].sum()}))
+        stats = pd.concat([stats.head(max_level), 
+            pd.Series({'other': stats[max_level:].sum()})])
 
     out = {
         'Stats / Values': '<br>'.join(values),
@@ -161,7 +161,7 @@ def dfSummary(data: pd.DataFrame, max_level: int = 10,
     dfSummary(data, is_collapsible = True)
     # tabbed summary
     from summarytools import tabset
-    tab1 = dfSummary(data).render()
+    tab1 = dfSummary(data).to_html()
     tabset({'tab1', tab1})
     ```
     """
@@ -213,7 +213,7 @@ def dfSummary(data: pd.DataFrame, max_level: int = 10,
            .set_properties(**{'text-align': 'left',
                 'font-size':'12px',
                 'vertical-align':'middle'})
-           .set_table_styles([dict(selector='tr', props=[('text-align', 'center')])])
+           .set_table_styles([{'selector':'thead>tr>th', 'props': 'text-align : left'}])
            .set_properties(subset=['No'], **{'width':'5%', 
                 'max-width':'50px', 
                 'min-width':'20px'})
@@ -226,14 +226,13 @@ def dfSummary(data: pd.DataFrame, max_level: int = 10,
            .set_properties(subset=['Freqs / (% of Valid)'], **{'width':'25%',
                 'min-width':'100px'})\
            .set_properties(subset=['Missing'], width='10%') \
-           .set_table_styles([dict(props=[('table-layout', 'auto')])])\
-           .hide_index()\
+           .hide(axis='index')\
            .set_caption(tbl_caption))
     if show_graph:
         out = out.set_properties(subset=['Graph'], **{'width':'20%', 'min-width':'150px'})
 
     if is_collapsible:
-        out = out.render()
+        out = out.to_html()
         out = collapsible(out, tbl_name)
         return display(HTML(out))
 
