@@ -234,6 +234,6 @@ def dfSummary(data: pd.DataFrame, max_level: int = 10,
     if is_collapsible:
         out = out.to_html()
         out = collapsible(out, tbl_name)
-        return display(HTML(out))
+        return HTML(out)
 
     return out

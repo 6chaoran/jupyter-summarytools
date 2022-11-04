@@ -71,40 +71,45 @@ def tabset(tabs: dict):
     style = """<style>
     /* Style the tab */
     .tab {
-      overflow: hidden;
-      border: 1px solid #ccc;
-      background-color: #f1f1f1;
+      border-bottom: 1px solid #ccc;
+      display: flex;
+      flex-wrap: wrap;
     }
 
     /* Style the buttons inside the tab */
-    .tab button {
+    .tab>button {
       background-color: inherit;
-      float: left;
       border: none;
       outline: none;
       cursor: pointer;
-      padding: 10px;
-      transition: 0.3s;
+      padding: 0.5rem 1rem;
+      transition: 0.1s;
       font-size: 15px;
+      border-top-left-radius: 0.25rem;
+      border-top-right-radius: 0.25rem;
+      color: #0d6efd;
     }
 
     /* Change background color of buttons on hover */
-    .tab button:hover {
-      background-color: #ddd;
+    .tab>button:hover {
+      background-color: #ccc;
     }
 
     /* Create an active/current tablink class */
-    .tab button.active-tab {
-      background-color: #ccc;
+    .tab>button.active-tab {
+      background-color: white;
+      border: 1px solid #ccc;
+      border-bottom: none;
+      margin-bottom: -1px;
+      color: #495057;
+
     }"""
 
     style += f"""
     /* Style the tab content */
     .{tabcontent} {{
       display: none;
-      padding: 6px 12px;
-      border: 1px solid #ccc;
-      border-top: none;
+      padding: 0 0.5rem;
     }}
     </style>"""
 
@@ -131,13 +136,17 @@ def tabset(tabs: dict):
 
 
 
-def collapsible(html:str, name:str = ""):
+def collapsible(html:str, name:str = "", 
+                closed_text:str = "Show Summary", 
+                open_text:str = "Hide Summary"):
     """[summary]
     Args:
-        html ([str]): HTML content to put in collapsible container
-        name ([str]): name to be shown in collapsible header
+        html (str): HTML content to put in collapsible container
+        name (str): name to be shown in collapsible header
+        closed_text (str):
+        open_text (str):
     Returns:
-        [str]: HTML
+        str: HTML
     Examples:
     ```
     from IPython.display import dispaly, HTML
@@ -152,14 +161,14 @@ def collapsible(html:str, name:str = ""):
     if len(name) > 0:
         name = " - " + name
 
-    html = f"""<button type="button" class = "collapsible", 
-    id = "btn-{id}" onclick = "coll_toggle_{id}()">Show Summary{name}</button>
-    <div class="content" id="cont-{id}">
+    html = f"""<button type="button" class = "st-collapsible", 
+    id = "btn-{id}" onclick = "coll_toggle_{id}()">{closed_text}{name}</button>
+    <div class="st-content" id="cont-{id}">
       {html}
     </div>
     """
     css = """<style>
-    .collapsible {
+    .st-collapsible {
       background-color: #eee;
       color: #444;
       cursor: pointer;
@@ -169,13 +178,14 @@ def collapsible(html:str, name:str = ""):
       text-align: left;
       outline: none;
       font-size: 14px;
+      border-radius: 0.5rem;
     }
 
-    .active, .collapsible:hover {
+    .active .st-collapsible:hover {
       background-color: #ccc;
     }
 
-    .content {
+    .st-content {
       padding: 0 10px;
       background-color: white;
       max-height: 0;
@@ -183,9 +193,9 @@ def collapsible(html:str, name:str = ""):
       transition: max-height 0.2s ease-out;
     }
 
-    .collapsible:after {
+    .st-collapsible:after {
       content: '\053'; /* Unicode character for "plus" sign (+) */
-      color: white;
+      color: #444;
       font-weight: bold;
       float: right;
       margin-left: 5px;
@@ -203,10 +213,10 @@ def collapsible(html:str, name:str = ""):
         coll.classList.toggle("active");
         if (content.style.maxHeight){{
           content.style.maxHeight = null;
-          coll.innerHTML = "Show Summary{name}";
+          coll.innerHTML = "{closed_text}{name}";
         }} else {{
           content.style.maxHeight = content.scrollHeight + "px";
-          coll.innerHTML = "Hide Summary{name}";
+          coll.innerHTML = "{open_text}{name}";
         }}
     }}  
 
