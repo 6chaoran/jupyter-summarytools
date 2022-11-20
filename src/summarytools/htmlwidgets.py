@@ -82,7 +82,7 @@ def tabset(tabs: dict):
       border: none;
       outline: none;
       cursor: pointer;
-      padding: 0.5rem 1rem;
+      padding: 1rem;
       transition: 0.1s;
       font-size: 15px;
       border-top-left-radius: 0.25rem;
@@ -167,9 +167,9 @@ def collapsible(html:str, name:str = "",
       {html}
     </div>
     """
-    css = """<style>
-    .st-collapsible {
-      background-color: #eee;
+    css = f"""<style>
+    #btn-{id}.st-collapsible {{
+      background-color: white;
       color: #444;
       cursor: pointer;
       padding: 10px;
@@ -178,32 +178,43 @@ def collapsible(html:str, name:str = "",
       text-align: left;
       outline: none;
       font-size: 14px;
-      border-radius: 0.5rem;
-    }
+      border-top-left-radius: 0.375rem;
+      border-top-right-radius: 0.375rem;
+      border: 1px solid #dee2e6;
 
-    .active .st-collapsible:hover {
-      background-color: #ccc;
-    }
+    }}
 
-    .st-content {
+    #btn-{id}.active {{
+      background-color: #e7f1ff;
+      color: #0c63e4;
+    }}
+
+    #cont-{id}.st-content {{
       padding: 0 10px;
       background-color: white;
       max-height: 0;
       overflow: hidden;
       transition: max-height 0.2s ease-out;
-    }
+    }}
 
-    .st-collapsible:after {
+    #cont-{id}.st-content .active {{
+      border: 1px solid #dee2e6;
+      boder-top: none;
+      border-bottom-left-radius: 0.375rem;
+      border-bottom-right-radius: 0.375rem;
+    }}
+
+    #btn-{id}.st-collapsible:after {{
       content: '\053'; /* Unicode character for "plus" sign (+) */
       color: #444;
       font-weight: bold;
       float: right;
       margin-left: 5px;
-    }
+    }}
 
-    .active:after {
+    #btn-{id}.active:after {{
       content: '\055';
-    }
+    }}
     </style>"""
 
     js = f"""<script>
