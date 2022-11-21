@@ -1,14 +1,14 @@
 from pathlib import Path
 from matplotlib import pyplot as plt
 from pandas.api.types import is_datetime64_any_dtype as _is_datetime
+from pandas.api.types import is_numeric_dtype as _is_numerical
+
 import numpy as np
 import pandas as pd
 from IPython.display import HTML, display
 import inspect
 from .htmlwidgets import collapsible, tabset
-
-def _is_numerical(x:pd.Series):
-    return (x.dtype == int) or (x.dtype == float)
+import base64
 
 def _is_categorical(x: pd.Series, num_unique, max_level):
     try:
@@ -26,6 +26,13 @@ def _is_categorical(x: pd.Series, num_unique, max_level):
 def _is_bool(x: pd.Series):
     return x.dtype == bool
 
+def encode_img_base64(img):
+    with open(img, "rb") as image_file:
+        x = image_file.read()
+        encoded_string = base64.b64encode(x).decode()
+    src = f"data:image/png;base64, {encoded_string}"
+    return src
+
 def _graph_cat_col(stats, filename, figsize):
     fig = plt.figure(figsize=figsize)
     pct = stats / stats.sum()
@@ -33,9 +40,10 @@ def _graph_cat_col(stats, filename, figsize):
     plt.gca().invert_yaxis()
     plt.xlim(0, 1)
     plt.axis('off')
-    fig.savefig(filename, bbox_inches='tight', pad_inches=0)
+    fig.savefig(filename, bbox_inches='tight', pad_inches=0, transparent=True)
     plt.close()
-    return f'<img src = "{filename}"></img>'
+    base64str = encode_img_base64(filename)
+    return f'<img src = "{base64str}"></img>'
 
 
 def _graph_num_col(x, filename, figsize):
@@ -44,9 +52,10 @@ def _graph_num_col(x, filename, figsize):
     _ = plt.hist(x, bins=10, color='gray', edgecolor='black', alpha=0.3)
     plt.axis('off')
     plt.tight_layout()
-    fig.savefig(filename, bbox_inches='tight', pad_inches=0)
+    fig.savefig(filename, bbox_inches='tight', pad_inches=0, transparent=True)
     plt.close()
-    return f'<img src = "{filename}"></img>'
+    base64str = encode_img_base64(filename)
+    return f'<img src = "{base64str}"></img>'
 
 
 def _graph_date_col(x: pd.Series, filename, figsize):
@@ -54,9 +63,10 @@ def _graph_date_col(x: pd.Series, filename, figsize):
     fig = plt.figure(figsize=figsize)
     plt.hist(freqs, bins=10, color='gray', alpha=0.3, ec='black')
     plt.axis('off')
-    fig.savefig(filename, bbox_inches='tight', pad_inches=0)
+    fig.savefig(filename, bbox_inches='tight', pad_inches=0, transparent=True)
     plt.close()
-    return f'<img src = "{filename}"></img>'
+    base64str = encode_img_base64(filename)
+    return f'<img src = "{base64str}"></img>'
 
 
 def _stats_date_col(x: pd.Series, show_graph: bool, filename: str):
@@ -199,7 +209,7 @@ def dfSummary(data: pd.DataFrame, max_level: int = 10,
         elif _is_numerical(data[v]):
             stats += [_stats_num_col(data[v], show_graph, filename)]
         else:
-            pass
+            stats += [{'Stats / Values': f'not supported dtype {data[v].dtype}'}]
     stats = pd.DataFrame(stats)
     out = pd.concat([out, stats], axis=1)
 

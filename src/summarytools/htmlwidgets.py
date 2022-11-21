@@ -172,16 +172,16 @@ def collapsible(html:str, name:str = "",
       background-color: white;
       color: #444;
       cursor: pointer;
-      padding: 10px;
+      padding: 1.5rem 2rem;
       width: 100%;
-      border: none;
       text-align: left;
       outline: none;
       font-size: 14px;
       border-top-left-radius: 0.375rem;
       border-top-right-radius: 0.375rem;
       border: 1px solid #dee2e6;
-
+      border-bottom: none;
+      font-weight: 500;
     }}
 
     #btn-{id}.active {{
@@ -195,25 +195,33 @@ def collapsible(html:str, name:str = "",
       max-height: 0;
       overflow: hidden;
       transition: max-height 0.2s ease-out;
+      border: 1px solid #dee2e6;
+      border-top: none;
     }}
 
     #cont-{id}.st-content .active {{
       border: 1px solid #dee2e6;
-      boder-top: none;
       border-bottom-left-radius: 0.375rem;
       border-bottom-right-radius: 0.375rem;
     }}
 
     #btn-{id}.st-collapsible:after {{
-      content: '\053'; /* Unicode character for "plus" sign (+) */
+      content: '';
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23212529'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
       color: #444;
       font-weight: bold;
       float: right;
       margin-left: 5px;
+      height: 1.5em;
+      width:  1.5rem;
+      background-repeat: no-repeat;
+      transition: transform 0.2s ease-in-out;
     }}
 
     #btn-{id}.active:after {{
-      content: '\055';
+      content: '';
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%230c63e4'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+      transform: rotate(180deg);
     }}
     </style>"""
 
