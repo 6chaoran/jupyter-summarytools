@@ -1,3 +1,7 @@
+![GitHub](https://img.shields.io/github/license/6chaoran/jupyter-summarytools) 
+
+![PyPI](https://img.shields.io/pypi/v/summarytools?color=blue) ![PyPI - Status](https://img.shields.io/pypi/status/summarytools?color=blue) ![PyPI - Downloads](https://img.shields.io/pypi/dm/summarytools?color=blue) ![GitHub last commit](https://img.shields.io/github/last-commit/6chaoran/jupyter-summarytools?color=blue)
+
 # DataFrame Summary Tools in Jupyter Notebook
 
 This is python version of `summarytools`, which is used to generate standardized and comprehensive summary of dataframe in Jupyter Notebooks.
