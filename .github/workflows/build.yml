@@ -1,3 +1,8 @@
+name: build python package
+on:
+  push:
+    tags:
+      - '*'
 steps:
 - uses: actions/checkout@v3
 - uses: actions/setup-python@v4
@@ -5,3 +10,4 @@ steps:
     python-version: '3.9'
     cache: 'pip' # caching pip dependencies
 - run: pip install -r requirements.txt
+- uses: jugmac00/will-it-build@main
