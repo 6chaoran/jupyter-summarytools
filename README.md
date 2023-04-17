@@ -16,7 +16,7 @@ The idea is originated from the `summarytools` R package (https://github.com/dco
 # Installation
 
 ```
-pip install jupyter-summarytools
+pip install summarytools
 ```
 
 ## Dependencies
@@ -25,7 +25,7 @@ pip install jupyter-summarytools
 
 # Quick Start
 
-the quick-start notebook is available in [here](quick-start.ipynb)
+the quick-start notebook is available in [here](https://github.com/6chaoran/jupyter-summarytools/blob/master/quick-start.ipynb)
 
 out-of-box `dfSummary` function will generate a HTML based data frame summary.
 
