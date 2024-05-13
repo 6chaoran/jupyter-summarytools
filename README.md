@@ -25,7 +25,7 @@ pip install summarytools
 
 # Quick Start
 
-the quick-start notebook is available in [here](https://github.com/6chaoran/jupyter-summarytools/blob/master/quick-start.ipynb)
+the quick-start notebook is available in [here](https://github.com/6chaoran/jupyter-summarytools/blob/master/quick-start-colab.ipynb) or <a href="https://colab.research.google.com/github/6chaoran/jupyter-summarytools/blob/master/quick-start-colab.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 out-of-box `dfSummary` function will generate a HTML based data frame summary.
 
