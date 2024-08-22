@@ -75,3 +75,8 @@ Using the following bash command to retain the data frame summary in exported HT
 ```bash
 jupyter nbconvert --to html_embed path/of/your/notebook.ipynb
 ```
+
+------
+
+## Stargazers over time
+[![Stargazers over time](https://starchart.cc/6chaoran/jupyter-summarytools.svg?variant=adaptive)](https://starchart.cc/6chaoran/jupyter-summarytools)
