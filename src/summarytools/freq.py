@@ -1,6 +1,5 @@
 import pandas as pd
-from .summarytools import _var_name, _get_stats
-from pathlib import Path
+from .summarytools import _var_name
 import numpy as np
 from IPython.display import HTML
 from .htmlwidgets import collapsible
@@ -8,7 +7,7 @@ from .htmlwidgets import collapsible
 def freq(data: pd.DataFrame, var: str = None,
          max_level: int=10, digits: int=2, order: str='levels',
          report_nans: bool=True, cumul: bool=True, totals: bool=True,
-         tmp_dir: str='./tmp', is_collapsible=False):
+         is_collapsible=False):
     """generate HTML data frequency table
 
     Args:
@@ -20,7 +19,6 @@ def freq(data: pd.DataFrame, var: str = None,
         report_nans (bool, optional): [flag to show missing values]. Defaults to True.
         cumul (bool, optional): [flag to show cumulative proportions]. Defaults to True.
         totals (bool, optional): [flag to show totals]. Defaults to True.
-        tmp_dir (str, optional): [directory for temporary images]. Defaults to './tmp'.
         is_collapsible (bool, optional): [flag for collapsible page]. Defaults to False.
     
     Returns:
@@ -32,15 +30,14 @@ def freq(data: pd.DataFrame, var: str = None,
         if var is None:
             raise ValueError("`var` must be specified when `data` is a pd.DataFrame")
         s = data[var].copy()
+        var_name = str(s.name)
+        tbl_name = _var_name(data) + ": " + var_name
     elif isinstance(data, pd.Series):
         s = data.copy()
-    else:
-        s = pd.Series(data)
-
-    if getattr(s, 'name', None) is not None:
         var_name = str(s.name)
+        tbl_name = var_name
     else:
-        var_name = 'value'
+        raise ValueError("`data` must be a pd.Series or pd.DataFrame")
     
     # weights for frequency
     w = pd.Series(np.ones(len(s)), index=s.index)
@@ -89,4 +86,75 @@ def freq(data: pd.DataFrame, var: str = None,
         '% Total Cum.': pct_total_cum,
     })
 
+    if report_nans:
+        na_row = {
+            var_name: 'NaN',
+            'Freq': n_missing,
+            '% Valid': np.nan,
+            '% Valid Cum.': np.nan,
+            '% Total': (n_missing / n_total * 100) if n_total > 0 else np.nan,
+            '% Total Cum.': 100.0,
+        }
+        out = pd.concat([out, pd.DataFrame([na_row])], ignore_index=True)
+
+    if totals:
+        total_row = {
+            var_name: 'Total',
+            'Freq': n_total,
+            '% Valid': 100.0 if n_valid > 0 else np.nan,
+            '% Valid Cum.': 100.0 if n_valid > 0 else np.nan,
+            '% Total': 100.0,
+            '% Total Cum.': 100.0,
+        }
+        out = pd.concat([out, pd.DataFrame([total_row])], ignore_index=True)
+
+    if not report_nans and not cumul:
+        out = out.drop(columns=['% Valid Cum.', '% Total', '% Total Cum.'])
+        pct_cols = ['% Valid']
+    elif not cumul:
+        out = out.drop(columns=['% Valid Cum.', '% Total Cum.'])
+        pct_cols = ['% Valid', '% Total']
+    elif not report_nans:
+        out = out.drop(columns=['% Total', '% Total Cum.'])
+        pct_cols = ['% Valid', '% Valid Cum.']
+    else:
+        pct_cols = ['% Valid', '% Valid Cum.', '% Total', '% Total Cum.']
+
+
+    # styles
+    tbl_caption = f"<strong>Frequency Table</strong><br>{var_name}"
+    tbl_caption += f"<br>Valid: {n_valid:,.0f} &nbsp; Missing: {n_missing:,.0f} &nbsp; Total: {n_total:,.0f}"
+
+    def _fmt_freq(v):
+        if pd.isna(v):
+            return ''
+        return f'{v:,.0f}'
+
+    def _fmt_pct(v):
+        if pd.isna(v):
+            return ''
+        return f'{v:.{digits}f}%'
+
+    out = (out.style
+           .format({'Freq': _fmt_freq, **{c: _fmt_pct for c in pct_cols}})
+           .set_properties(**{'text-align':'left',
+                              'font-size':'12px',
+                              'vertical-align':'middle'})
+           .set_table_styles([{'selector':'thead>tr>th',
+                               'props':'text-align: left'}])
+           .set_properties(subset=[var_name], **{'width':'25%',
+                                                 'min-width':'100px',
+                                                 'word-break':'break-word'})
+           .set_properties(subset=['Freq'], **{'width':'10%',
+                                               'min-width':'60px'})
+           .set_properties(subset=pct_cols, **{'width':'16%',
+                                               'min-width':'80px'})
+           .hide(axis='index')
+           .set_caption(tbl_caption))
+
+    if is_collapsible:
+            out = out.to_html()
+            out = collapsible(out, tbl_name)
+            return HTML(out)
+    
     return out
