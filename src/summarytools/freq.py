@@ -52,13 +52,11 @@ def freq(data: pd.DataFrame, var: str = None,
     grouped = valid_w.groupby(valid_s).sum()
 
     # max level of categorical variable to be shown
+    other_sum = None
     if max_level is not None and len(grouped) > max_level:
         grouped_sorted = grouped.sort_values(ascending=False)
-        top = grouped_sorted.iloc[:max_level]
+        grouped = grouped_sorted.iloc[:max_level]
         other_sum = grouped_sorted.iloc[max_level:].sum()
-        grouped = top
-        if other_sum > 0:
-            grouped.loc['(other)'] = other_sum
 
     # ordering of the table
     if order == 'freq':
@@ -69,6 +67,11 @@ def freq(data: pd.DataFrame, var: str = None,
         except TypeError:
             # if cannot sort index, fall back to frequency order
             grouped = grouped.sort_values(ascending=False)
+
+    if other_sum is not None and other_sum > 0:
+        grouped = pd.concat([grouped, pd.Series({'(other)': other_sum})])
+        grouped.loc['(other)'] = other_sum
+
 
     # build table
     freq_col = grouped.values.astype(float)
