@@ -24,6 +24,23 @@ def freq(data: pd.DataFrame, var: str = None,
     Returns:
         [Pandas.Styler]: if is_collapsible = False
         [HTML]: if is_collapsible = True
+
+    Examples:
+    ```
+    from summarytools import freq
+    import pandas as pd
+    data = pd.read_csv('./your-data-path.csv')
+    # default freq view
+    freq(data, var='var_name')
+    freq(data['var_name'])
+    # collapsible frequency table
+    freq(data, var='var_name', is_collapsible = True)
+    # tabbed frequency table
+    from summarytools import tabset
+    tab1 = freq(data['var1']).to_html()
+    tab2 = freq(data['var2']).to_html()
+    tabset({'tab1': tab1, 'tab2': tab2})
+    ```
     """
     # resolve pd.DataFrame vs pd.Series
     if isinstance(data, pd.DataFrame):
