@@ -25,6 +25,68 @@ def freq(data: pd.DataFrame, var: str = None,
     
     Returns:
         [Pandas.Styler]: if is_collapsible = False
-        [HTML]: if is_collapisbile = True
+        [HTML]: if is_collapsible = True
     """
-    pass
+    # resolve pd.DataFrame vs pd.Series
+    if isinstance(data, pd.DataFrame):
+        if var is None:
+            raise ValueError("`var` must be specified when `data` is a pd.DataFrame")
+        s = data[var].copy()
+    elif isinstance(data, pd.Series):
+        s = data.copy()
+    else:
+        s = pd.Series(data)
+
+    if getattr(s, 'name', None) is not None:
+        var_name = str(s.name)
+    else:
+        var_name = 'value'
+    
+    # weights for frequency
+    w = pd.Series(np.ones(len(s)), index=s.index)
+
+    n_total = w.sum()
+    is_na = s.isna()
+    n_missing = w[is_na].sum()
+    n_valid = n_total - n_missing
+
+    valid_s = s[~is_na]
+    valid_w = w[~is_na]
+    grouped = valid_w.groupby(valid_s).sum()
+
+    # max level of categorical variable to be shown
+    if max_level is not None and len(grouped) > max_level:
+        grouped_sorted = grouped.sort_values(ascending=False)
+        top = grouped_sorted.iloc[:max_level]
+        other_sum = grouped_sorted.iloc[max_level:].sum()
+        grouped = top
+        if other_sum > 0:
+            grouped.loc['(other)'] = other_sum
+
+    # ordering of the table
+    if order == 'freq':
+        grouped = grouped.sort_values(ascending=False)
+    else:  # 'levels'
+        try:
+            grouped = grouped.sort_index()
+        except TypeError:
+            # if cannot sort index, fall back to frequency order
+            grouped = grouped.sort_values(ascending=False)
+
+    # build table
+    freq_col = grouped.values.astype(float)
+    pct_valid = freq_col / n_valid * 100 if n_valid > 0 else np.zeros_like(freq_col)
+    pct_valid_cum = np.cumsum(pct_valid)
+    pct_total = freq_col / n_total * 100 if n_total > 0 else np.zeros_like(freq_col)
+    pct_total_cum = np.cumsum(pct_total)
+
+    out = pd.DataFrame({
+        var_name: grouped.index.astype(str),
+        'Freq': freq_col,
+        '% Valid': pct_valid,
+        '% Valid Cum.': pct_valid_cum,
+        '% Total': pct_total,
+        '% Total Cum.': pct_total_cum,
+    })
+
+    return out
