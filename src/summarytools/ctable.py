@@ -4,6 +4,12 @@ import numpy as np
 from IPython.display import HTML
 from .htmlwidgets import collapsible
 
+try:
+    from scipy.stats import chi2
+    _HAS_SCIPY = True
+except ImportError:
+    _HAS_SCIPY = False
+
 def ctable(x: pd.Series | str, y: pd.Series | str, data: pd.DataFrame=None,
          prop: str="row", digits: int=2,
          report_nans: bool=True, chisq: bool=True, totals: bool=True,
@@ -42,16 +48,74 @@ def ctable(x: pd.Series | str, y: pd.Series | str, data: pd.DataFrame=None,
         x_name, y_name = x, y
         tbl_name = _var_name(data) + ": " + x_name + ' * ' + y_name
     else:
-        raise ValueError("`x`,`y` must be a pd.Series or str")
+        raise ValueError("`x`,`y` must both be pd.Series or str")
+    
+    if report_nans:
+        df[x_name] = df[x_name].where(df[x_name].notna(), 'NaN').astype(str)
+        df[y_name] = df[y_name].where(df[y_name].notna(), 'NaN').astype(str)
 
     # build table
-    out = pd.DataFrame()
+        tbl = df.groupby([x_name, y_name]).size().unstack()
+        
+    if '<NA>' in tbl.index:
+        order = [i for i in tbl.index if i != '<NA>'] + ['<NA>']
+        tbl = tbl.reindex(index=order)
+    if '<NA>' in tbl.columns:
+        order = [c for c in tbl.columns if c != '<NA>'] + ['<NA>']
+        tbl = tbl.reindex(columns=order)
+
+    n_rows = tbl.shape[0]
+    n_cols = tbl.shape[1]
+    total_all = tbl.values.sum()
+    total_rows = tbl.sum(axis=0)
+    total_cols = tbl.sum(axis=1)
+    
+    if totals:
+        tbl['Total'] = tbl.sum(axis=1)
+        tbl.loc['Total'] = tbl.sum(axis=0)
+
+    # proportions
+    counts_arr = tbl.values.astype(float)
+    if prop == 'row':
+        denom = counts_arr[:, [-1]] if totals else counts_arr.sum(axis=1, keepdims=True)
+        pct_arr = np.divide(counts_arr, denom, out=np.zeros_like(counts_arr), where=denom != 0) * 100
+    elif prop == 'col':
+        denom = counts_arr[[-1], :] if totals else counts_arr.sum(axis=0, keepdims=True)
+        pct_arr = np.divide(counts_arr, denom, out=np.zeros_like(counts_arr), where=denom != 0) * 100
+    elif prop == 'tot':
+        pct_arr = counts_arr / total_all * 100 if total_all > 0 else np.zeros_like(counts_arr)
+    elif prop == 'none':
+        pct_arr = None
+    else:
+        raise ValueError("`prop` must be one of 'row', 'col', 'tot', 'none'")
     
     # styles
-    tbl_name = ''
-    tbl_caption = ''
+    out = pd.DataFrame(index=tbl.index, columns=tbl.columns, dtype=object)
+    for i in range(counts_arr.shape[0]):
+        for j in range(counts_arr.shape[1]):
+            n_val = counts_arr[i, j]
+            p_val = pct_arr[i,j] if pct_arr is not None else None
+            out.iat[i,j] = _fmt_freq(n_val) if p_val is None else f'{_fmt_freq(n_val)} ({_fmt_pct(p_val, digits=digits)})'
+
+    tbl_caption = f"<strong>Cross-Tabulation Table</strong><br>{tbl_name}"
+
+    if chisq:  # chi-squared test
+        if not _HAS_SCIPY:
+            tbl_caption += f"<br>(scipy not installed - chi-square test skipped)"
+        else:
+            chisq_ddof = (n_rows-1)*(n_cols-1)
+            expected = np.outer(total_cols, total_rows) / total_all
+            chisq_test = ((tbl - expected)**2 / expected).values.sum()
+            chisq_pvalue = 1 - chi2.cdf(chisq_test, chisq_ddof)
+            tbl_caption += f"<br>Chi-squared: {chisq_test:.4f} &nbsp; ddof={chisq_ddof:.0f} &nbsp; p-value={chisq_pvalue:,.4f}"
 
     out = (out.style
+           .set_properties(**{'text-align':'left',
+                              'font-size':'12px',
+                              'vertical-align':'middle'})
+           .set_table_styles([{'selector':'thead>tr>th',
+                               'props':'text-align: left'}])
+           .hide(axis='index')
            .set_caption(tbl_caption))
 
     if is_collapsible:
