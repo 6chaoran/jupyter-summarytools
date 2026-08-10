@@ -146,7 +146,7 @@ def freq(data: pd.DataFrame, var: str = None,
     tbl_caption += f"<br>Valid: {n_valid:,.0f} &nbsp; Missing: {n_missing:,.0f} &nbsp; Total: {n_total:,.0f}"
 
     out = (out.style
-           .format({'Freq': _fmt_freq, **{c: _fmt_pct for c in pct_cols}})
+           .format({'Freq': _fmt_freq, **{c: lambda x: _fmt_pct(x, digits) for c in pct_cols}})
            .set_properties(**{'text-align':'left',
                               'font-size':'12px',
                               'vertical-align':'middle'})
