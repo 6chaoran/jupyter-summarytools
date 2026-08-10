@@ -168,3 +168,12 @@ def _get_stats(data: pd.DataFrame, max_level: int, tbl_name: str, show_graph: bo
         stats += [_summarize_col(data[v], max_level, tbl_name, i, show_graph, tmp_dir)]
     return stats
 
+def _fmt_freq(v):
+    if pd.isna(v):
+        return ''
+    return f'{v:,.0f}'
+
+def _fmt_pct(v, digits):
+    if pd.isna(v):
+        return ''
+    return f'{v:.{digits}f}%'

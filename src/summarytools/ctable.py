@@ -1,5 +1,5 @@
 import pandas as pd
-from .summarytools import _var_name
+from .summarytools import _var_name, _fmt_freq, _fmt_pct
 import numpy as np
 from IPython.display import HTML
 from .htmlwidgets import collapsible
@@ -30,4 +30,16 @@ def ctable(x: pd.Series | str, y: pd.Series | str, data: pd.DataFrame=None,
     TODO
     ```
     """
-    pass
+    # styles
+    tbl_name = ''
+    tbl_caption = ''
+
+    out = (out.style
+           .set_caption(tbl_caption))
+
+    if is_collapsible:
+        out = out.to_html()
+        out = collapsible(out, tbl_name)
+        return HTML(out)
+    
+    return out
