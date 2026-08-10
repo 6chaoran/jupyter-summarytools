@@ -33,7 +33,19 @@ def ctable(x: pd.Series | str, y: pd.Series | str, data: pd.DataFrame=None,
     
     Examples:
     ```
-    TODO
+    from summarytools import ctable
+    import pandas as pd
+    data = pd.read_csv('./your-data-path.csv')
+    # default ctable view
+    ctable(x=data['x'], y=data['y'])
+    ctable(x='x', y='y', data=data)
+    # collapsible cross-tabulation
+    ctable(x='x', y='y', data=data, is_collapsible=True)
+    # tabbed tables
+    from summarytools import tabset
+    tab1 = freq(data1['x1'], data1['y1']).to_html()
+    tab2 = freq(data2['x2'], data2['y2']).to_html()
+    tabset({'tab1': tab1, 'tab2': tab2})
     ```
     """
     # resolve pd.Series vs str
@@ -55,7 +67,7 @@ def ctable(x: pd.Series | str, y: pd.Series | str, data: pd.DataFrame=None,
         df[y_name] = df[y_name].where(df[y_name].notna(), 'NaN').astype(str)
 
     # build table
-        tbl = df.groupby([x_name, y_name]).size().unstack()
+    tbl = df.groupby([x_name, y_name]).size().unstack()
         
     if '<NA>' in tbl.index:
         order = [i for i in tbl.index if i != '<NA>'] + ['<NA>']
@@ -112,12 +124,15 @@ def ctable(x: pd.Series | str, y: pd.Series | str, data: pd.DataFrame=None,
             tbl_caption += f"<br>Chi-squared: {chisq_test:.4f} &nbsp; ddof={chisq_ddof:.0f} &nbsp; p-value={chisq_pvalue:,.4f}"
     
     out = (out.style
-           .set_properties(**{'text-align':'left',
+           .set_properties(**{'text-align':'right',
                               'font-size':'12px',
                               'vertical-align':'middle'})
            .set_table_styles([{'selector':'thead>tr>th',
-                               'props':'text-align: left'}])
-           .hide(axis='index')
+                               'props':'text-align: left'},
+                              {'selector':'table',
+                               'props':'min_width : 800px'},
+                              {'selector':'caption',
+                               'props':'white-space : nowrap'}])
            .set_caption(tbl_caption))
 
     if is_collapsible:
