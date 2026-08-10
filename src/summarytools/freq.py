@@ -1,11 +1,9 @@
 import numpy as np
 import pandas as pd
-from .summarytools import _var_name, _fmt_freq, _fmt_pct
-import numpy as np
 from IPython.display import HTML
 
+from .summarytools import _var_name, _fmt_freq, _fmt_pct
 from .htmlwidgets import collapsible
-from .summarytools import _var_name
 
 
 def freq(data: pd.DataFrame, var: str | None = None,

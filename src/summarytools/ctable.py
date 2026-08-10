@@ -1,7 +1,8 @@
-import pandas as pd
-from .summarytools import _var_name, _fmt_freq, _fmt_pct
 import numpy as np
+import pandas as pd
 from IPython.display import HTML
+
+from .summarytools import _var_name, _fmt_freq, _fmt_pct
 from .htmlwidgets import collapsible
 
 try:
