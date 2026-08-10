@@ -1,27 +1,21 @@
-from pathlib import Path
+import base64
+import inspect
+
+import pandas as pd
 from matplotlib import pyplot as plt
 from pandas.api.types import is_datetime64_any_dtype as _is_datetime
 from pandas.api.types import is_numeric_dtype as _is_numerical
 
-import numpy as np
-import pandas as pd
-from IPython.display import HTML, display
-import inspect
-from .htmlwidgets import collapsible, tabset
-import base64
 
 def _is_categorical(x: pd.Series, num_unique, max_level):
     try:
         if x.dtype == 'category':
             return True
-    except:
+    except Exception:   #noqa
         pass
-    if x.dtype == 'object':
+    if x.dtype in ['object', 'str']:
         return True
-    if x.dtype in ['int', 'float']:
-        if num_unique <= max_level:
-            return True
-    return False
+    return bool(x.dtype in ['int', 'float'] and num_unique <= max_level)
 
 def _is_bool(x: pd.Series):
     return x.dtype == bool
@@ -119,7 +113,7 @@ def _stats_cat_col(x: pd.Series, max_level: int, show_graph: bool, filename: str
 def _stats_num_col(x: pd.Series, show_graph: bool, filename: str) -> dict:
 
     stats = f"Mean (sd) : {x.mean():.1f} ({x.std():.1f})"
-    stats += f"<br>min < med < max:"
+    stats += "<br>min < med < max:"
     stats += f"<br>{x.min():.1f} < {x.median():.1f} < {x.max():.1f}"
     stats += f"<br>IQR (CV) : {x.quantile(0.75) - x.quantile(0.25):.1f} ({x.mean()/x.std():.1f})"
 
