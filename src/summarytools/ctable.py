@@ -69,7 +69,14 @@ def ctable(x: pd.Series | str, y: pd.Series | str, data: pd.DataFrame=None,
     total_all = tbl.values.sum()
     total_rows = tbl.sum(axis=0)
     total_cols = tbl.sum(axis=1)
-    
+
+    if chisq:  # chi-squared test
+        if _HAS_SCIPY:
+            chisq_ddof = (n_rows-1)*(n_cols-1)
+            expected = np.outer(total_cols, total_rows) / total_all
+            chisq_test = ((tbl - expected)**2 / expected).values.sum()
+            chisq_pvalue = 1 - chi2.cdf(chisq_test, chisq_ddof)
+            
     if totals:
         tbl['Total'] = tbl.sum(axis=1)
         tbl.loc['Total'] = tbl.sum(axis=0)
@@ -98,17 +105,12 @@ def ctable(x: pd.Series | str, y: pd.Series | str, data: pd.DataFrame=None,
             out.iat[i,j] = _fmt_freq(n_val) if p_val is None else f'{_fmt_freq(n_val)} ({_fmt_pct(p_val, digits=digits)})'
 
     tbl_caption = f"<strong>Cross-Tabulation Table</strong><br>{tbl_name}"
-
-    if chisq:  # chi-squared test
+    if chisq:
         if not _HAS_SCIPY:
             tbl_caption += f"<br>(scipy not installed - chi-square test skipped)"
         else:
-            chisq_ddof = (n_rows-1)*(n_cols-1)
-            expected = np.outer(total_cols, total_rows) / total_all
-            chisq_test = ((tbl - expected)**2 / expected).values.sum()
-            chisq_pvalue = 1 - chi2.cdf(chisq_test, chisq_ddof)
             tbl_caption += f"<br>Chi-squared: {chisq_test:.4f} &nbsp; ddof={chisq_ddof:.0f} &nbsp; p-value={chisq_pvalue:,.4f}"
-
+    
     out = (out.style
            .set_properties(**{'text-align':'left',
                               'font-size':'12px',
