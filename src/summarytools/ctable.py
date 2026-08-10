@@ -67,13 +67,13 @@ def ctable(x: pd.Series | str, y: pd.Series | str, data: pd.DataFrame=None,
         df[y_name] = df[y_name].where(df[y_name].notna(), 'NaN').astype(str)
 
     # build table
-    tbl = df.groupby([x_name, y_name]).size().unstack()
+    tbl = df.groupby([x_name, y_name]).size().unstack().fillna(0)
         
-    if '<NA>' in tbl.index:
-        order = [i for i in tbl.index if i != '<NA>'] + ['<NA>']
+    if 'NaN' in tbl.index:
+        order = [i for i in tbl.index if i != 'NaN'] + ['NaN']
         tbl = tbl.reindex(index=order)
-    if '<NA>' in tbl.columns:
-        order = [c for c in tbl.columns if c != '<NA>'] + ['<NA>']
+    if 'NaN' in tbl.columns:
+        order = [c for c in tbl.columns if c != 'NaN'] + ['NaN']
         tbl = tbl.reindex(columns=order)
 
     n_rows = tbl.shape[0]
