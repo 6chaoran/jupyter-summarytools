@@ -1,10 +1,12 @@
-import pandas as pd
-from .summarytools import _var_name
 import numpy as np
+import pandas as pd
 from IPython.display import HTML
-from .htmlwidgets import collapsible
 
-def freq(data: pd.DataFrame, var: str = None,
+from .htmlwidgets import collapsible
+from .summarytools import _var_name
+
+
+def freq(data: pd.DataFrame, var: str | None = None,
          max_level: int=10, digits: int=2, order: str='levels',
          report_nans: bool=True, cumul: bool=True, totals: bool=True,
          is_collapsible=False):
@@ -45,7 +47,7 @@ def freq(data: pd.DataFrame, var: str = None,
     # resolve pd.DataFrame vs pd.Series
     if isinstance(data, pd.DataFrame):
         if var is None:
-            raise ValueError("`var` must be specified when `data` is a pd.DataFrame")
+            raise TypeError("`var` must be specified when `data` is a pd.DataFrame")
         s = data[var].copy()
         var_name = str(s.name)
         tbl_name = _var_name(data) + ": " + var_name
@@ -54,7 +56,7 @@ def freq(data: pd.DataFrame, var: str = None,
         var_name = str(s.name)
         tbl_name = var_name
     else:
-        raise ValueError("`data` must be a pd.Series or pd.DataFrame")
+        raise TypeError("`data` must be a pd.Series or pd.DataFrame")
     
     # weights for frequency
     w = pd.Series(np.ones(len(s)), index=s.index)

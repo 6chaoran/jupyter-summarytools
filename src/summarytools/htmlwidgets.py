@@ -1,7 +1,8 @@
 import numpy as np
 from IPython.display import HTML, display
 
-class Tags():
+
+class Tags:
     def __init__(self):
         pass
 
@@ -157,7 +158,7 @@ def collapsible(html:str, name:str = "",
     ```
     """    
 
-    id = f"{str(int(np.random.random() * 10000))}"
+    id = f"{int(np.random.random() * 10000)!s}"
     if len(name) > 0:
         name = " - " + name
 

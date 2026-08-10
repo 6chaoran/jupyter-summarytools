@@ -1,13 +1,13 @@
-import pandas as pd
-from .summarytools import _var_name, _get_stats
-from pathlib import Path
-import numpy as np
-from IPython.display import HTML
-from .htmlwidgets import collapsible
-
-
-from .summarytools import _summarize_col
 import multiprocessing as mp
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+from IPython.display import HTML
+
+from .htmlwidgets import collapsible
+from .summarytools import _get_stats, _summarize_col, _var_name
+
 
 def get_stats(df, num_proc: int, max_level: int = 10, tbl_name: str = 'df', show_graph: bool = True, tmp_dir: str ='./tmp'):
     tmp_dir = Path(tmp_dir)
@@ -57,8 +57,8 @@ def dfSummary(data: pd.DataFrame, max_level: int = 10,
     tbl_caption = "<strong>Data Frame Summary</strong><br>"
     tbl_caption += tbl_name + "<br>" + tbl_dims + "<br>" + tbl_dups
 
-    nrows, ncols = data.shape
-    num_uniques = data.apply(pd.Series.nunique)
+    _nrows, ncols = data.shape
+    _num_uniques = data.apply(pd.Series.nunique)
 
     variable = data.columns.values.astype(str)
     variable = [f'<strong>{i}</strong>' for i in variable]
