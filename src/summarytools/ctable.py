@@ -30,6 +30,23 @@ def ctable(x: pd.Series | str, y: pd.Series | str, data: pd.DataFrame=None,
     TODO
     ```
     """
+    # resolve pd.Series vs str
+    if isinstance(x, pd.Series) and isinstance(y, pd.Series):
+        df = pd.merge(x.copy(), y.copy(), left_index=True, right_index=True).astype(str)
+        x_name, y_name = str(x.name), str(y.name)
+        tbl_name = x_name + ' * ' + y_name
+    elif isinstance(x, str) and isinstance(y, str):
+        if data is None:
+            raise ValueError("`data` must be specified when `x`,`y` are str")
+        df = data[[x, y]].astype(str).copy()
+        x_name, y_name = x, y
+        tbl_name = _var_name(data) + ": " + x_name + ' * ' + y_name
+    else:
+        raise ValueError("`x`,`y` must be a pd.Series or str")
+
+    # build table
+    out = pd.DataFrame()
+    
     # styles
     tbl_name = ''
     tbl_caption = ''
