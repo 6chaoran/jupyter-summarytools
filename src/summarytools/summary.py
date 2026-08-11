@@ -64,7 +64,7 @@ def dfSummary(data: pd.DataFrame, max_level: int = 10,
     variable = [f'<strong>{i}</strong>' for i in variable]
     no = np.arange(1, ncols + 1)
     dtype = [f'<br>[{i}]' for i in data.dtypes.astype(str)]
-    variable = np.char.array(variable) + np.char.array(dtype)
+    variable = [name + type_name for name, type_name in zip(variable, dtype)]
     out = pd.DataFrame({'No': no, 'Variable': variable})
 
     tmp_dir = Path(tmp_dir)
@@ -80,9 +80,9 @@ def dfSummary(data: pd.DataFrame, max_level: int = 10,
     out = pd.concat([out, stats], axis=1)
 
     # Missing
-    missing = np.char.array([f'{i:,}' for i in data.isna().sum()])
-    missing_pct = np.char.array([f'<br>({i:.1%})' for i in data.isna().mean()])
-    out['Missing'] = missing + missing_pct
+    missing = [f'{i:,}' for i in data.isna().sum()]
+    missing_pct = [f'<br>({i:.1%})' for i in data.isna().mean()]
+    out['Missing'] = [count + pct for count, pct in zip(missing, missing_pct)]
 
     # styles
     out = (out.style
