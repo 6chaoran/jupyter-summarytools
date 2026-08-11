@@ -1,3 +1,4 @@
+from .ctable import ctable
 from .freq import freq
 from .htmlwidgets import collapsible, tabset
 from .summary import dfSummary, get_stats
@@ -11,6 +12,7 @@ __all__ = [
     'collapsible',
     'dfSummary',
     'freq',
+    'ctable',
     'get_stats',
     'tabset',
 ]
