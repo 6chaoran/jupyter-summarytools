@@ -1,9 +1,11 @@
+from typing import Literal
+
 import numpy as np
 import pandas as pd
 from IPython.display import HTML
 
-from .summarytools import _var_name, _fmt_freq, _fmt_pct
 from .htmlwidgets import collapsible
+from .summarytools import _fmt_freq, _fmt_pct, _var_name
 
 try:
     from scipy.stats import chi2
@@ -12,7 +14,7 @@ except ImportError:
     _HAS_SCIPY = False
 
 def ctable(x: pd.Series | str, y: pd.Series | str, data: pd.DataFrame=None,
-         prop: str="row", digits: int=2,
+         prop: Literal["row", "col", "tot", "none"]="row", digits: int=2,
          report_nans: bool=True, chisq: bool=True, totals: bool=True,
          is_collapsible=False):
     """generate cross-tabulations (joint frequencies) for pairs of categorical variables
@@ -21,7 +23,7 @@ def ctable(x: pd.Series | str, y: pd.Series | str, data: pd.DataFrame=None,
         x (pd.Series or str): [first categorical variable, values will appear as row names]
         y (pd.Series or str): [second categorical variable, values will appear as column names]
         data (pd.DataFrame, optional): [input dataframe]. Defaults to None if `x`,`y` are pd.Series.
-        prop (str, optional): [proportions to show ('row', 'col', 'tot', 'none')]. Defaults to 'row'.
+        prop (Literal["row", "col", "tot", "none"], optional): [proportions to show]. Defaults to 'row'.
         digits (int, optional): [number of rounding digits]. Defaults to 2.
         report_nans (bool, optional): [flag to show missing values]. Defaults to True.
         chisq (bool, optional): [flag to display chi-square statistic along with p-value]. Defaults to True.
@@ -49,26 +51,38 @@ def ctable(x: pd.Series | str, y: pd.Series | str, data: pd.DataFrame=None,
     tabset({'tab1': tab1, 'tab2': tab2})
     ```
     """
-    # resolve pd.Series vs str
+    # Resolve inputs into collision-proof internal columns. For Series, match
+    # repeated index labels by occurrence instead of performing a many-to-many
+    # merge, which would multiply observations.
     if isinstance(x, pd.Series) and isinstance(y, pd.Series):
-        df = pd.merge(x.copy(), y.copy(), left_index=True, right_index=True).astype(str)
         x_name, y_name = str(x.name), str(y.name)
         tbl_name = x_name + ' * ' + y_name
+        x_df = pd.DataFrame({'_index': list(x.index), '_x': x.to_numpy()})
+        y_df = pd.DataFrame({'_index': list(y.index), '_y': y.to_numpy()})
+        x_df['_occurrence'] = x_df.groupby('_index', sort=False, dropna=False).cumcount()
+        y_df['_occurrence'] = y_df.groupby('_index', sort=False, dropna=False).cumcount()
+        df = pd.merge(x_df, y_df, on=['_index', '_occurrence'], how='inner')[['_x', '_y']]
     elif isinstance(x, str) and isinstance(y, str):
         if data is None:
-            raise ValueError("`data` must be specified when `x`,`y` are str")
-        df = data[[x, y]].astype(str).copy()
+            raise TypeError("`data` must be specified when `x`,`y` are str")
         x_name, y_name = x, y
         tbl_name = _var_name(data) + ": " + x_name + ' * ' + y_name
+        df = pd.DataFrame({'_x': data[x].to_numpy(), '_y': data[y].to_numpy()})
     else:
-        raise ValueError("`x`,`y` must both be pd.Series or str")
-    
+        raise TypeError("`x`,`y` must both be pd.Series or str")
+
     if report_nans:
-        df[x_name] = df[x_name].where(df[x_name].notna(), 'NaN').astype(str)
-        df[y_name] = df[y_name].where(df[y_name].notna(), 'NaN').astype(str)
+        df['_x'] = df['_x'].where(df['_x'].notna(), 'NaN')
+        df['_y'] = df['_y'].where(df['_y'].notna(), 'NaN')
+    else:
+        df = df.dropna(subset=['_x', '_y'])
+
+    df = df.astype({'_x': str, '_y': str})
 
     # build table
-    tbl = df.groupby([x_name, y_name]).size().unstack().fillna(0)
+    tbl = df.groupby(['_x', '_y']).size().unstack().fillna(0)
+    tbl.index.name = x_name
+    tbl.columns.name = y_name
         
     if 'NaN' in tbl.index:
         order = [i for i in tbl.index if i != 'NaN'] + ['NaN']
@@ -83,16 +97,24 @@ def ctable(x: pd.Series | str, y: pd.Series | str, data: pd.DataFrame=None,
     total_rows = tbl.sum(axis=0)
     total_cols = tbl.sum(axis=1)
 
-    if chisq:  # chi-squared test
-        if _HAS_SCIPY:
-            chisq_ddof = (n_rows-1)*(n_cols-1)
-            expected = np.outer(total_cols, total_rows) / total_all
-            chisq_test = ((tbl - expected)**2 / expected).values.sum()
-            chisq_pvalue = 1 - chi2.cdf(chisq_test, chisq_ddof)
+    chisq_note = None
+    if chisq and _HAS_SCIPY and total_all > 0 and n_rows > 1 and n_cols > 1:
+        chisq_ddof = (n_rows-1)*(n_cols-1)
+        expected = np.outer(total_cols, total_rows) / total_all
+        chisq_test = ((tbl - expected)**2 / expected).values.sum()
+        chisq_pvalue = chi2.sf(chisq_test, chisq_ddof)
+    elif chisq and _HAS_SCIPY:
+        chisq_note = "chi-square test requires at least two non-empty rows and columns"
             
     if totals:
-        tbl['Total'] = tbl.sum(axis=1)
-        tbl.loc['Total'] = tbl.sum(axis=0)
+        total_label = 'Total'
+        existing_labels = set(tbl.index).union(tbl.columns)
+        if total_label in existing_labels:
+            total_label = 'Total (all)'
+            while total_label in existing_labels:
+                total_label += '*'
+        tbl[total_label] = tbl.sum(axis=1)
+        tbl.loc[total_label] = tbl.sum(axis=0)
 
     # proportions
     counts_arr = tbl.values.astype(float)
@@ -120,7 +142,9 @@ def ctable(x: pd.Series | str, y: pd.Series | str, data: pd.DataFrame=None,
     tbl_caption = f"<strong>Cross-Tabulation Table</strong><br>{tbl_name}"
     if chisq:
         if not _HAS_SCIPY:
-            tbl_caption += f"<br>(scipy not installed - chi-square test skipped)"
+            tbl_caption += "<br>(scipy not installed - chi-square test skipped)"
+        elif chisq_note is not None:
+            tbl_caption += f"<br>({chisq_note})"
         else:
             tbl_caption += f"<br>Chi-squared: {chisq_test:.4f} &nbsp; ddof={chisq_ddof:.0f} &nbsp; p-value={chisq_pvalue:,.4f}"
     
