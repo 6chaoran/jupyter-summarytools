@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 from IPython.display import HTML
 
+from .summarytools import _var_name, _fmt_freq, _fmt_pct
 from .htmlwidgets import collapsible
-from .summarytools import _var_name
 
 
 def freq(data: pd.DataFrame, var: str | None = None,
@@ -147,18 +147,8 @@ def freq(data: pd.DataFrame, var: str | None = None,
     tbl_caption = f"<strong>Frequency Table</strong><br>{var_name}"
     tbl_caption += f"<br>Valid: {n_valid:,.0f} &nbsp; Missing: {n_missing:,.0f} &nbsp; Total: {n_total:,.0f}"
 
-    def _fmt_freq(v):
-        if pd.isna(v):
-            return ''
-        return f'{v:,.0f}'
-
-    def _fmt_pct(v):
-        if pd.isna(v):
-            return ''
-        return f'{v:.{digits}f}%'
-
     out = (out.style
-           .format({'Freq': _fmt_freq, **{c: _fmt_pct for c in pct_cols}})
+           .format({'Freq': _fmt_freq, **{c: lambda x: _fmt_pct(x, digits) for c in pct_cols}})
            .set_properties(**{'text-align':'left',
                               'font-size':'12px',
                               'vertical-align':'middle'})

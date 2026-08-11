@@ -8,7 +8,7 @@ This is python version of `summarytools`, which is used to generate standardized
 
 The idea is originated from the `summarytools` R package (https://github.com/dcomtois/summarytools).
 
-* Only `dfSummary` and `freq` functions are made available for now
+* Only `dfSummary`, `freq`, and `ctable()` functions are made available for now
 * Added two html widgets to avoid displaying lengthy content
     + [collapsible summary](#collapsible-summary) 
     + [tabbed summary](#tabbed-summary)
@@ -27,7 +27,7 @@ pip install summarytools
 
 the quick-start notebook is available in [here](https://github.com/6chaoran/jupyter-summarytools/blob/master/quick-start-colab.ipynb) or <a href="https://colab.research.google.com/github/6chaoran/jupyter-summarytools/blob/master/quick-start-colab.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
-out-of-box `dfSummary` and `freq` functions will generate a HTML based data frame summary.
+out-of-box `dfSummary`, `freq` and `ctable` functions will generate a HTML based data frame summary.
 
 ```py
 import pandas as pd
